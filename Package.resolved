@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "mvvmhelpers",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AKoulabukhov/MVVMHelpers",
+      "state" : {
+        "revision" : "dc6d110ec9c6d6ba8dccff482ffabed8768863c0",
+        "version" : "1.0.0"
+      }
+    }
+  ],
+  "version" : 2
+}
