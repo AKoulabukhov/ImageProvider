@@ -6,7 +6,7 @@ private var imageProviderObservationKey: UInt8 = 0
 
 extension UIImageView {
 
-    var imageProvider: UIImageProviderProtocol? {
+    public var imageProvider: UIImageProviderProtocol? {
         get { value(forKey: &imageProviderKey) }
         set { setImageProvider(newValue) }
     }
