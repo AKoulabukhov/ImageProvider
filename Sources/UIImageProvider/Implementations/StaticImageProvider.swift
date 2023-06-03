@@ -1,10 +1,11 @@
 import UIKit
-import MVVMHelpers
+import Combine
 
 public final class StaticUIImageProvider: UIImageProviderProtocol {
-    public private(set) var image: Observable<UIImage?> = Observable(nil)
+    public var image: AnyPublisher<UIImage?, Never> { imageSubject.eraseToAnyPublisher() }
     public let transition: UIImageViewTransitionProtocol
 
+    private let imageSubject = CurrentValueSubject<UIImage?, Never>(nil)
     private var imageFactory: StaticUIImageFactoryProtocol?
 
     public init(
@@ -17,7 +18,7 @@ public final class StaticUIImageProvider: UIImageProviderProtocol {
 
     public func onAttach() {
         guard let imageFactory = imageFactory else { return }
-        image.value = imageFactory.makeImage()
+        imageSubject.value = imageFactory.makeImage()
         self.imageFactory = nil
     }
 }

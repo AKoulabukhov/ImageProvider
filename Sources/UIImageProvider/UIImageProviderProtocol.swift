@@ -1,8 +1,8 @@
 import UIKit
-import MVVMHelpers
+import Combine
 
 public protocol UIImageProviderProtocol: AnyObject {
-    var image: Observable<UIImage?> { get }
+    var image: AnyPublisher<UIImage?, Never> { get }
     var transition: UIImageViewTransitionProtocol { get }
     func onAttach()
     func onDetach()

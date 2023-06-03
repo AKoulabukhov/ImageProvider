@@ -1,4 +1,5 @@
 import XCTest
+import Combine
 @testable import UIImageProvider
 
 final class RemoteImageProviderTests: XCTestCase {
@@ -31,7 +32,7 @@ final class RemoteImageProviderTests: XCTestCase {
     }
 
     func testThat_WhenSutCreated_ThenNoImageSetAndTransitionAssigned() {
-        XCTAssertNil(sut.image.value)
+        XCTAssertNil(sut.consume())
         XCTAssertTrue(sut.transition === UIImageViewInstantImageTransition.default)
     }
 
@@ -40,7 +41,7 @@ final class RemoteImageProviderTests: XCTestCase {
 
         XCTAssertEqual(imageLoader.loadImageCalls.count, 1)
         XCTAssertEqual(imageLoader.loadImageCalls[0].url, url)
-        XCTAssertEqual(sut.image.value, placeholder)
+        XCTAssertEqual(sut.consume(), placeholder)
     }
 
     func testThat_WhenLoadingCompleted_ThenImageSet() {
@@ -49,14 +50,14 @@ final class RemoteImageProviderTests: XCTestCase {
         sut.onAttach()
         imageLoader.loadImageCalls[0].completion(.success(loadedImage))
 
-        XCTAssertEqual(sut.image.value, loadedImage)
+        XCTAssertEqual(sut.consume(), loadedImage)
     }
 
     func testThat_WhenLoadingFails_ThenPlaceholderSet() {
         sut.onAttach()
         imageLoader.loadImageCalls[0].completion(.failure(NSError.networkError))
 
-        XCTAssertEqual(sut.image.value, placeholder)
+        XCTAssertEqual(sut.consume(), placeholder)
     }
 
     func testThat_WhenLoaderCompletesImmediately_ThenImageSetAndPlaceholderNotCreated() {
@@ -66,7 +67,7 @@ final class RemoteImageProviderTests: XCTestCase {
         sut.onAttach()
 
         XCTAssertEqual(placeholderFactoryCallsCount, 0)
-        XCTAssertEqual(sut.image.value, loadedImage)
+        XCTAssertEqual(sut.consume(), loadedImage)
     }
 
     func testThat_WhenLoaderFailsImmediately_ThenPlaceholderSet() {
@@ -74,12 +75,12 @@ final class RemoteImageProviderTests: XCTestCase {
 
         sut.onAttach()
 
-        XCTAssertEqual(sut.image.value, placeholder)
+        XCTAssertEqual(sut.consume(), placeholder)
     }
 
     func testThat_GivenImageLoading_WhenDetachCalled_ThenImageLoaderCancelled() {
         var cancelCallsCount = 0
-        imageLoader.loadImageReturnValue = RemoteImageLoaderCancellationToken { cancelCallsCount += 1 }
+        imageLoader.loadImageReturnValue = AnyCancellable { cancelCallsCount += 1 }
         sut.onAttach()
 
         sut.onDetach()
@@ -89,7 +90,7 @@ final class RemoteImageProviderTests: XCTestCase {
 
     func testThat_GivenImageLoaded_WhenDetachCalled_ThenImageLoaderNotCancelled() {
         var cancelCallsCount = 0
-        imageLoader.loadImageReturnValue = RemoteImageLoaderCancellationToken { cancelCallsCount += 1 }
+        imageLoader.loadImageReturnValue = AnyCancellable { cancelCallsCount += 1 }
         sut.onAttach()
         imageLoader.loadImageCalls[0].completion(.success(UIImage()))
 
@@ -124,7 +125,7 @@ final class RemoteImageProviderTests: XCTestCase {
 
     func testThat_WhenDetachedFromOneOfMultipleInstancesThenNotCancelled() {
         var cancelCallsCount = 0
-        imageLoader.loadImageReturnValue = RemoteImageLoaderCancellationToken { cancelCallsCount += 1 }
+        imageLoader.loadImageReturnValue = AnyCancellable { cancelCallsCount += 1 }
         sut.onAttach()
         sut.onAttach()
 

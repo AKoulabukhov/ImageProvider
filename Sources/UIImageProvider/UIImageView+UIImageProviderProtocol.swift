@@ -1,5 +1,5 @@
 import UIKit
-import MVVMHelpers
+import Combine
 
 private var imageProviderKey: UInt8 = 0
 private var imageProviderObservationKey: UInt8 = 0
@@ -11,7 +11,7 @@ extension UIImageView {
         set { setImageProvider(newValue) }
     }
 
-    private var imageProviderObservation: ObservationProtocol? {
+    private var imageProviderObservation: AnyCancellable? {
         get { value(forKey: &imageProviderObservationKey) }
         set { setValue(newValue, forKey: &imageProviderObservationKey) }
     }
@@ -30,8 +30,13 @@ extension UIImageView {
         }
 
         imageProvider.onAttach()
-        imageProviderObservation = imageProvider.image.observeNewFromCurrent { [weak self, weak imageProvider] image in
-            guard let self = self, let transition = imageProvider?.transition else { return }
+        imageProviderObservation = imageProvider.image.sink { [weak self, weak imageProvider] image in
+            guard
+                let self = self,
+                let transition = imageProvider?.transition
+            else {
+                return
+            }
             transition.setImage(
                 image,
                 on: self

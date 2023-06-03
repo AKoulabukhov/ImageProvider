@@ -1,14 +1,16 @@
 import UIKit
-import MVVMHelpers
+import Combine
 @testable import UIImageProvider
 
 final class MockUIImageProvider: UIImageProviderProtocol {
-    private(set) var image: Observable<UIImage?> = Observable(nil)
+    var image: AnyPublisher<UIImage?, Never> { imageSubject.eraseToAnyPublisher() }
     var transition: UIImageViewTransitionProtocol { _transition }
 
+    private let imageSubject = CurrentValueSubject<UIImage?, Never>(nil)
+
     var _image: UIImage? {
-        get { image.value }
-        set { image.value = newValue }
+        get { imageSubject.value }
+        set { imageSubject.value = newValue }
     }
 
     var _transition = MockUIImageViewTransition()

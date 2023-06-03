@@ -23,7 +23,7 @@ final class StaticUIImageProviderTests: XCTestCase {
     func testThat_WhenSutCreated_ThenNoImageSetAndTransitionAssigned() {
         sut = makeSut()
 
-        XCTAssertNil(sut.image.value)
+        XCTAssertNil(sut.consume())
         XCTAssertTrue(sut.transition === transition)
     }
 
@@ -32,7 +32,7 @@ final class StaticUIImageProviderTests: XCTestCase {
 
         sut.onAttach()
 
-        XCTAssertEqual(sut.image.value, image)
+        XCTAssertEqual(sut.consume(), image)
     }
 
     func testThat_WhenSutAttachedMultipleTimes_ThenImageCreatedOnce() {

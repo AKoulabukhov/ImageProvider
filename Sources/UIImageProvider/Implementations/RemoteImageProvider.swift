@@ -1,18 +1,11 @@
 import UIKit
-import MVVMHelpers
-
-public struct RemoteImageLoaderCancellationToken {
-    public let cancel: () -> Void
-    public init(_ cancel: @escaping () -> Void) {
-        self.cancel = cancel
-    }
-}
+import Combine
 
 public protocol RemoteImageLoaderProtocol: AnyObject {
     func loadImage(
         with url: URL,
         completion: @escaping (Result<UIImage, Error>) -> Void
-    ) -> RemoteImageLoaderCancellationToken?
+    ) -> AnyCancellable?
 }
 
 public final class RemoteImageProvider: UIImageProviderProtocol {
@@ -22,8 +15,9 @@ public final class RemoteImageProvider: UIImageProviderProtocol {
 
     private var state: State = .empty
     private var attachCounter = 0 // If used for multiple image views
+    private let imageSubject = CurrentValueSubject<UIImage?, Never>(nil)
     private lazy var placeholder: UIImage? = placeholderImageFactory?.makeImage()
-    private var cancellationToken: RemoteImageLoaderCancellationToken?
+    private var cancellationToken: AnyCancellable?
 
     public init(
         url: URL,
@@ -41,7 +35,7 @@ public final class RemoteImageProvider: UIImageProviderProtocol {
 
     // MARK: - UIImageProviderProtocol
     
-    public private(set) var image: Observable<UIImage?> = Observable(nil)
+    public var image: AnyPublisher<UIImage?, Never> { imageSubject.eraseToAnyPublisher() }
     public private(set) var transition: UIImageViewTransitionProtocol = UIImageViewInstantImageTransition.default
 
     public func onAttach() {
@@ -100,7 +94,7 @@ public final class RemoteImageProvider: UIImageProviderProtocol {
         newImage: UIImage?,
         newState: State
     ) {
-        image.value = newImage
+        imageSubject.value = newImage
         state = newState
     }
 }
